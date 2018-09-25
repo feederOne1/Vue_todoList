@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>todoList</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <link rel="stylesheet" href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <style>
+        .isFinish{
+            
+            color:red;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <to-component></to-component>
+    </div>
+    
+    <script>
+        let LBC = (function (){
+            return {
+                add(value) {
+                    localStorage.setItem('todoList',JSON.stringify(value))
+                },
+                get() {
+                    return JSON.parse(localStorage.getItem('todoList'))
+                },
+                remove() {
+                    localStorage.removeItem('todoList')
+                }
+            }
+        })()
+        let toComponent = {
+            template: `
+                        <div class='container'>
+                            <div class='row'>
+                                <div class='col-md-7'>
+                                    <div class='from-group'>
+                                        <label>添加工作事项</label>
+                                        <input type='text' class='from-control' v-model='newItem' @keyup.enter='addItem' :placeholder='Tips'/>
+                                    </div>
+                                    <div class='list-group'>
+                                        <a href='#' class='list-group-item'>
+                                            工作清单：
+                                        </a>
+                                        <a href='#' class='list-group-item' v-for='(item,index) in itemList' :key='index'>
+                                            <span>{{index+1}}</span>
+                                            {{item.title}}
+                                            <span class='badge' :class='{isFinish: item.isFinish}' @click='toggoleItem(item)'>
+                                                <i class='glyphicon glyphicon-ok'></i>
+                                            </span>
+                                            <span class='badge' @click='removeItem(index)'>
+                                                <i class='glyphicon glyphicon-remove'></i>
+                                            </span>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>`,
+            data() {
+                return {
+                    newItem: '',
+                    itemList:LBC.get() || [],
+                    Tips: '输入清单,并按回车提交'
+                }
+            },
+            methods: {
+                addItem() {
+                    var item = {
+                        id: this.itemList.length + 1,
+                        title: this.newItem,
+                        isFinish: false
+                    }
+                    if(item.title){
+                        this.itemList.push(item)
+                        LBC.add(this.itemList)
+                        this.newItem = ''
+                    }
+                },
+                toggoleItem(item) {
+                    item.isFinish = !(item.isFinish)
+                    LBC.add(this.itemList)
+                },
+                removeItem(index) {
+                    this.itemList.splice(index,1)
+                    LBC.add(this.itemList)
+                }
+            }
+
+        }
+
+        var vm = new Vue({
+            el: '#app',
+            components: {
+                toComponent
+            }
+        })
+    </script>
+</body>
+</html>
